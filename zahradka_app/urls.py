@@ -1,7 +1,7 @@
 from django.urls import path
 # from . import views
 from .views import homepage, RegistrationView, LoginView, LogoutView, ChangePasswordView, garden_detail, garden, \
-    update_garden, delete_garden, contact, MembershipView, create_garden
+    update_garden, delete_garden, contact, create_garden
 
 urlpatterns = [
     path("", homepage, name="homepage"),
@@ -16,5 +16,4 @@ urlpatterns = [
     path("garden/<int:garden_id>/update_garden/", update_garden, name="update_garden"),
     path("garden/<int:garden_id>/delete_garden/", delete_garden, name="delete_garden"),
     path("contact", contact, name="contact"),
-    path('membership/', MembershipView.as_view(), name='membership'),
 ]

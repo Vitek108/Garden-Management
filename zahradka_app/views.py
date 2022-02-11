@@ -13,7 +13,7 @@ from django.views.generic import TemplateView, DetailView, ListView
 from django.views.generic.edit import FormMixin, CreateView
 
 from zahradka_app.forms import RegistrationForm, GardenForm, ContactForm
-from zahradka_app.models import Plant, Garden, GardenPlant, Event, Membership, UserMembership, Subscription
+from zahradka_app.models import Plant, Garden, GardenPlant, Event
 from datetime import date
 
 
@@ -63,20 +63,6 @@ class RegistrationView(FormMixin, TemplateView):
             return TemplateResponse(request, "accounts/register.html", context={"form": bounded_form})
 
 
-# class GardenView(LoginRequiredMixin, TemplateView):
-#     template_name = "garden.html"
-#
-#     def get(self, request, garden_id, *args, **kwargs):
-#         plants_db = Garden.plant.objects.all() #objects.all().filter(name=garden_id)
-#         context = {
-#             'name': Garden.name,
-#             'description': Garden.description,
-#             'address': Garden.description,
-#             'plant': plants_db,
-#         }
-#         return TemplateResponse(request, 'garden.html', context=context)
-
-
 @login_required(login_url='login')
 def garden(request):
     gardens = Garden.objects.filter(user=request.user)
@@ -108,56 +94,11 @@ def garden_detail(request, garden_id):
     }
     return render(request, 'garden_detail.html', context=context)
 
-# @login_required(login_url='login')
-# def garden_settings(request, ...):
-
-
-# class GardenSettingsView(View):
-#     template_name = 'garden_settings.html'
-#     model = GardenPlant
-#
-#     def get(self, request, garden_name, *args, **kwargs):
-#         garden_id = Garden.objects.get(name=garden_name).id
-#         garden = Garden.objects.get(id=garden_id)
-#
-#         context = {
-#             'name': garden.name,
-#             'description': garden.description,
-#             'address': garden.address,
-#             'plants': Plant.objects.all(),
-#         }
-#
-#         return render(request, 'garden_settings.html', context=context)
-#
-#
-#     def post(self, request, plant, *args, **kwargs):
-#         gardenplant = self.get_object()
-#         gardenplant.add(plant)
-#         gardenplant.save()
-#         return self.get(request, *args, **kwargs)
-
-
-# class EditGardenMixin:
-#     template_name = 'create_garden.html'
-#     form_class = GardenForm
-#     model = Garden
-#
-#     def get_success_url(self):
-#         return resolve_url('garden_detail')
-#
-#
-# class CreateGardenView(EditGardenMixin, CreateView):
-#     def get_context_data(self, **kwargs):
-#         context = super(CreateGardenView, self).get_context_data(**kwargs)
-#         context.update({
-#             'action_url': resolve_url('create_garden')
-#         })
-#         return context
 
 def subscription_check(user):
     return UserMembership.objects.get(user=user).membership.membership_type == Membership.PLUS
 
-#@user_passes_test(subscription_check, login_url='/membership/')
+
 def create_garden(request):
     form = GardenForm(request.POST or None)
     if form.is_valid():
@@ -207,26 +148,3 @@ def contact(request):
 
     form = ContactForm()
     return render(request, "contact.html", {'form': form})
-
-
-class MembershipView(ListView):
-    model = Membership
-    template_name = 'membership.html'
-
-    def get_user_membership(self):
-        user_membership_qs = UserMembership.objects.filter(user=self.request.user)
-        if user_membership_qs.exists():
-            return user_membership_qs.first()
-        return None
-
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(**kwargs)
-        current_membership = self.get_user_membership()
-        context['current_membership'] = str(current_membership.membership)
-        return context
-
-    def post(self, request):
-        current_membership = self.get_user_membership()
-        current_membership.membership = Membership.objects.get(membership_type=request.POST.get('membership_type'))
-        current_membership.save()
-        return redirect('membership')
